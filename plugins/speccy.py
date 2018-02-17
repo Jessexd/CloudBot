@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from cloudbot import hook
 from cloudbot.event import EventType
 
@@ -119,7 +120,13 @@ def parse_speccy(message, nick, url):
     if not badware:
         badware = None
 
-    specin = "\x02OS:\x02 {} ● \x02RAM:\x02 {} ● \x02CPU:\x02 {} ● \x02GPU:\x02 {} ● \x02Badware:\x02 {} ● \x02Failing Drive(s):\x02 {}".format(
+    specin = "\x02OS:\x02 {}\
+    ● \x02RAM:\x02 {}\
+    ● \x02CPU:\x02 {}\
+    ● \x02GPU:\x02 {}\
+    ● \x02Badware:\x02 {}\
+    ● \x02Failing Drive(s):\x02 {}\
+    ".format(
         osspec, ramspec, cpuspec, gpuspec, badware, smartspec)
 
     specout = re.sub("\s{2,}|\r\n|\n", " ", specin)
