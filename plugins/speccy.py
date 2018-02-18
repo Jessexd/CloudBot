@@ -1,97 +1,72 @@
 # -*- coding: utf-8 -*-
 from cloudbot import hook
-from cloudbot.event import EventType
 
-import asyncio
 import re
 import requests
-import tempfile
 
 from bs4 import BeautifulSoup as BS
+from contextlib import closing
+
+url_re = re.compile('https?:\/\/speccy.piriform.com\/results\/[A-z0-9]+', re.I)
 
 
-@asyncio.coroutine
-@hook.event([EventType.message, EventType.action], singlethread=True)
-def get_speccy_url(conn, message, chan, content, nick):
-    re_content = re.search(
-        r"https?:\/\/speccy.piriform.com\/results\/[A-z0-9]+", content)
-    if re_content:
-        return parse_speccy(message, nick, str(re_content.group(0)))
+@hook.regex(url_re)
+def get_speccy_url(message, match, chan, nick):
 
+    with closing(requests.get(match.group(), stream=True,
+                              timeout=3)) as response:
+        soup = BS(response.content, "lxml", from_encoding=response.encoding)
 
-def parse_speccy(message, nick, url):
+    body = soup.body
 
-    response = requests.get(url)
-    if not response:
-        return None
+    data = []
 
-    respHtml = response.content
-    speccy = tempfile.NamedTemporaryFile()
+    osspec = body.find("div", text='Operating System')
+    if osspec:
+        data.append(
+            "\x02OS:\x02" + " " + osspec.next_sibling.next_sibling.text)
 
-    with open(speccy.name, 'wb') as f:
-        f.write(respHtml)
+    ramspec = body.find("div", text='RAM')
+    if ramspec:
+        data.append(
+            "\x02RAM:\x02" + " " + ramspec.next_sibling.next_sibling.text)
 
-    soup = BS(open(speccy.name), "lxml-xml")
+    cpuspec = body.find("div", text='CPU')
+    if cpuspec:
+        data.append(
+            "\x02CPU:\x02" + " " + cpuspec.next_sibling.next_sibling.text)
 
-    try:
-        osspec = soup.body.find(
-            "div", text='Operating System').next_sibling.next_sibling.text
-    except AttributeError:
-        return "Invalid Speccy URL"
+    gpufind = body.find("div", text='Graphics').next_sibling.next_sibling.text
+    gpuspec = ""
+    for gpustring in re.finditer(
+            r'.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*',
+            gpufind, re.IGNORECASE):
+        gpuspec += gpustring.group()
+    if gpuspec:
+        data.append("\x02GPU:\x02" + " " + gpuspec)
 
-    try:
-        ramspec = soup.body.find(
-            "div", text='RAM').next_sibling.next_sibling.text
-    except AttributeError:
-        ramspec = None
+    picospec = body.find("div", text=re.compile('.*pico', re.I))
+    if picospec:
+        data.append("\x02Badware:\x02" + " " + picospec.text)
 
-    try:
-        cpuspec = soup.body.find(
-            "div", text='CPU').next_sibling.next_sibling.text
-    except AttributeError:
-        cpuspec = None
+    kmsspec = body.find("div", text=re.compile('.*kms', re.I))
+    if kmsspec:
+        data.append("\x02Badware:\x02" + " " + kmsspec.text)
 
-    try:
-        gpufind = soup.body.find(
-            "div", text='Graphics').next_sibling.next_sibling.text
-        gpuspec = ""
-        for gpustring in re.finditer(
-                r".*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*",
-                gpufind, re.IGNORECASE):
-            gpuspec += gpustring.group()
-    except AttributeError:
-        gpuspec = None
+    boosterspec = body.find("div", text=re.compile('.*booster', re.I))
+    if boosterspec:
+        data.append("\x02Badware:\x02" + " " + boosterspec.text)
 
-    try:
-        picospec = soup.body.find("div", text=re.compile('.*pico', re.I)).text
-    except AttributeError:
-        picospec = None
+    reviverspec = body.find("div", text=re.compile('.*reviver', re.I))
+    if reviverspec:
+        data.append("\x02Badware:\x02" + " " + reviverspec.text)
 
-    try:
-        kmsspec = soup.body.find("div", text=re.compile('.*kms', re.I)).text
-    except AttributeError:
-        kmsspec = None
-
-    try:
-        boosterspec = soup.body.find(
-            "div", text=re.compile('.*booster', re.I)).text
-    except AttributeError:
-        boosterspec = None
-
-    try:
-        reviverspec = soup.body.find(
-            "div", text=re.compile('.*reviver', re.I)).text
-    except AttributeError:
-        reviverspec = None
-
-    try:
-        killerspec = soup.body.find(
-            "div", text=re.compile('.*Killer.+Service', re.I)).text
-    except AttributeError:
-        killerspec = None
+    killerspec = body.find("div", text=re.compile('.*Killer.+Service', re.I))
+    if killerspec:
+        data.append("\x02Badware:\x02" + " " + killerspec.text)
 
     def smartcheck():
-        drivespec = soup.body.find_all("div", text="05")
+        drivespec = body.find_all("div", text="05")
         number_of_drives = len(drivespec)
 
         values = []
@@ -107,29 +82,16 @@ def parse_speccy(message, nick, url):
     try:
         z = smartcheck()
         if len(z) != 0:
-            smartspec = " Disk:"
+            smartspec = ""
             for item in z:
-                smartspec += " #" + item + " "
+                smartspec += data.append("\x02Bad Disk:\x02" +
+                                         (smartspec) + " #" + item + " ")
         else:
             smartspec = None
     except Exception:
         smartspec = None
 
-    badware_list = [picospec, kmsspec, boosterspec, reviverspec, killerspec]
-    badware = ', '.join(filter(None, badware_list))
-    if not badware:
-        badware = None
-
-    specin = "\x02OS:\x02 {}\
-    ● \x02RAM:\x02 {}\
-    ● \x02CPU:\x02 {}\
-    ● \x02GPU:\x02 {}\
-    ● \x02Badware:\x02 {}\
-    ● \x02Failing Drive(s):\x02 {}\
-    ".format(
-        osspec, ramspec, cpuspec, gpuspec, badware, smartspec)
-
-    specout = re.sub("\s{2,}|\r\n|\n", " ", specin)
+    specout = re.sub("\s{2,}|\r\n|\n", " ", str(' + '.join(data)))
 
     return specout
 
