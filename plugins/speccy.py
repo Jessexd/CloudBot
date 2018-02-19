@@ -52,23 +52,23 @@ def get_speccy_url(match):
 
     picospec = body.find("div", text=PICO_RE)
     if picospec:
-        data.append("\x02Bad:\x02" + " " + picospec.text)
+        data.append("\x02Badware:\x02" + " " + picospec.text)
 
     kmsspec = body.find("div", text=KMS_RE)
     if kmsspec:
-        data.append("\x02Bad:\x02" + " " + kmsspec.text)
+        data.append("\x02Badware:\x02" + " " + kmsspec.text)
 
     boosterspec = body.find("div", text=BOOSTER_RE)
     if boosterspec:
-        data.append("\x02Bad:\x02" + " " + boosterspec.text)
+        data.append("\x02Badware:\x02" + " " + boosterspec.text)
 
     reviverspec = body.find("div", text=REVIVER_RE)
     if reviverspec:
-        data.append("\x02Bad:\x02" + " " + reviverspec.text)
+        data.append("\x02Badware:\x02" + " " + reviverspec.text)
 
     killerspec = body.find("div", text=KILLER_RE)
     if killerspec:
-        data.append("\x02Bad:\x02" + " " + killerspec.text)
+        data.append("\x02Badware:\x02" + " " + killerspec.text)
 
     def smartcheck():
         drivespec = body.find_all("div", text="05")

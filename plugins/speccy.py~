@@ -10,7 +10,7 @@ from contextlib import closing
 
 url_re = re.compile('https?:\/\/speccy\.piriform\.com\/results\/[a-zA-Z0-9]+', re.I)
 
-GPU_RE = re.compile(r'.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*', re.I)
+GPU_RE = re.compile('.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*', re.I)
 PICO_RE = re.compile('.*pico', re.I)
 KMS_RE = re.compile('.*kms', re.I)
 BOOSTER_RE = re.compile('.*booster', re.I)
