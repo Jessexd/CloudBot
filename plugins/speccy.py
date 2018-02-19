@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from cloudbot import hook
 
 import re
@@ -10,6 +11,8 @@ from contextlib import closing
 url_re = re.compile('https?:\/\/speccy\.piriform\.com\/results\/[a-zA-Z0-9]+',
                     re.I)
 
+GPU_RE = re.compile(
+    r'.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*', re.I)
 PICO_RE = re.compile('.*pico', re.I)
 KMS_RE = re.compile('.*kms', re.I)
 BOOSTER_RE = re.compile('.*booster', re.I)
@@ -43,11 +46,8 @@ def get_speccy_url(match):
             "\x02CPU:\x02" + " " + cpuspec.next_sibling.next_sibling.text)
 
     gpufind = body.find("div", text='Graphics').next_sibling.next_sibling.text
-    GPU_RE = re.finditer(
-        r'.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*', gpufind,
-        re.IGNORECASE)
     gpuspec = ""
-    for gpustring in GPU_RE:
+    for gpustring in GPU_RE.finditer(gpufind):
         gpuspec += gpustring.group()
     if gpuspec:
         data.append("\x02GPU:\x02" + " " + gpuspec)
