@@ -76,17 +76,17 @@ def get_speccy_url(match):
 
         values = []
         for i in range(0, number_of_drives):
-            check = drivespec[i].next_sibling.next_sibling.stripped_strings
-            SMART = list(check)
+            drives = drivespec[i].next_sibling.next_sibling.stripped_strings
+            SMART = list(drives)
             rv_index = SMART.index("Raw Value:")
             raw_value = SMART[rv_index + 1]
             if raw_value != "0000000000":
                 values.append(str(i + 1))
         return values
 
-    check = smartcheck()
-    if check:
-        for item in check:
+    drives = smartcheck()
+    if drives:
+        for item in drives:
             data.append("\x02Bad Disk:\x02 #{}".format(item))
 
     specout = re.sub(r"\s+", " ", ' ● '.join(data))
