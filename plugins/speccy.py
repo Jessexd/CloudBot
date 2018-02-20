@@ -1,4 +1,4 @@
-from cloudbot import hook
+# -*- coding: utf-8 -*-
 
 import re
 import requests
