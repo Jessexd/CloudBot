@@ -70,11 +70,10 @@ def get_speccy_url(match):
 
     def smartcheck():
         drivespec = body.find_all("div", text="05")
-        number_of_drives = len(drivespec)
 
         values = []
-        for i in range(0, number_of_drives):
-            drives = drivespec[i].next_sibling.next_sibling.stripped_strings
+        for i, spec in enumerate(drivespec):
+            drives = spec.next_sibling.next_sibling.stripped_strings
             SMART = list(drives)
             rv_index = SMART.index("Raw Value:")
             raw_value = SMART[rv_index + 1]
