@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from cloudbot import hook
 
 import re
