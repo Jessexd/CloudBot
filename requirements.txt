@@ -18,4 +18,3 @@ pythonwhois
 imgurpython
 isodate
 yarl
-speccy_parser
