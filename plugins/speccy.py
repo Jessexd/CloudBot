@@ -120,4 +120,4 @@ def get_speccy_url(match):
 
     specout = re.sub(r"\s+", " ", ' ● '.join(data))
 
-    return specout()
+    return specout
