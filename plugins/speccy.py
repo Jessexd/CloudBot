@@ -49,13 +49,13 @@ def get_speccy_url(match):
         data.append(
             "\x02RAM:\x02" + " " + ram_spec.next_sibling.next_sibling.text)
 
-    mem_usg_spec = body.find(
+    ram_usg_spec = body.find(
         "div", class_="blue clear",
         text='Physical Memory').next_sibling.next_sibling.find(
             "div", text='Memory Usage:\xA0',
             class_="datakey").parent.find(class_="datavalue").text
-    if mem_usg_spec:
-        data.append("\x02RAM Usg:\x02" + " " + mem_usg_spec)
+    if ram_usg_spec:
+        data.append("\x02RAM Usg:\x02" + " " + ram_usg_spec)
 
     cpu_spec = body.find("div", text='CPU')
     if cpu_spec:
