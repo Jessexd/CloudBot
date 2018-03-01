@@ -28,6 +28,10 @@ def get_speccy_url(match):
 
     data = []
 
+    def specout():
+        spec_out = re.sub(r"\s+", " ", ' ● '.join(data))
+        return spec_out
+
     os_spec = body.find("div", text='Operating System')
     if os_spec:
         data.append(
@@ -89,7 +93,7 @@ def get_speccy_url(match):
     if killer_spec:
         data.append("\x02Badware:\x02" + " " + killer_spec.text)
 
-    if 'Badware' not in data:
+    if 'Badware' not in specout():
         data.append("\x02No Badware\x02")
 
     def smartcheck():
@@ -116,4 +120,4 @@ def get_speccy_url(match):
 
     specout = re.sub(r"\s+", " ", ' ● '.join(data))
 
-    return specout
+    return specout()
