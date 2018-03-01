@@ -10,7 +10,6 @@ from contextlib import closing
 
 url_re = re.compile('https?:\/\/speccy\.piriform\.com\/results\/[a-zA-Z0-9]+', re.I)
 
-RAMUSG_RE = re.compile('.*memory.+usage', re.I)
 GPU_RE = re.compile('.*(amd|radeon|intel|integrated|nvidia|geforce|gtx).*\n.*', re.I)
 PICO_RE = re.compile('.*pico', re.I)
 KMS_RE = re.compile('.*kms', re.I)
@@ -50,13 +49,13 @@ def get_speccy_url(match):
         data.append(
             "\x02RAM:\x02" + " " + ram_spec.next_sibling.next_sibling.text)
 
-    memusg_spec = body.find(
+    mem_usg_spec = body.find(
         "div", class_="blue clear",
         text='Physical Memory').next_sibling.next_sibling.find(
             "div", text='Memory Usage:\xA0',
             class_="datakey").parent.find(class_="datavalue").text
-    if memusg_spec:
-        data.append("\x02MEM Usage:\x02" + " " + memusg_spec)
+    if mem_usg_spec:
+        data.append("\x02RAM Usg:\x02" + " " + mem_usg_spec)
 
     cpu_spec = body.find("div", text='CPU')
     if cpu_spec:
@@ -90,6 +89,9 @@ def get_speccy_url(match):
     if killer_spec:
         data.append("\x02Badware:\x02" + " " + killer_spec.text)
 
+    if 'Badware' not in data:
+        data.append("\x02No Badware\x02")
+
     def smartcheck():
         drive__spec = body.find_all("div", class_="blue clear", text="05")
         drive_spec_SMART_checked = body.find(
@@ -109,6 +111,8 @@ def get_speccy_url(match):
     if drives:
         for item in drives:
             data.append("\x02Bad Disk:\x02 #{}".format(item))
+    else:
+        data.append("\x02Disks Healthy\x02")
 
     specout = re.sub(r"\s+", " ", ' ● '.join(data))
 
