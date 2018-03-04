@@ -28,78 +28,89 @@ def get_speccy_url(match):
 
     data = []
 
-    def specout():
-        spec_out = re.sub(r"\s+", " ", ' ● '.join(data))
-        return spec_out
-
     os_spec = body.find("div", text='Operating System')
-    if os_spec:
+    if os_spec is not None:
         data.append(
             "\x02OS:\x02" + " " + os_spec.next_sibling.next_sibling.text)
 
     def cspace():
-        c_drive = body.find("div", class_="datavalue", text='C:')
-        if c_drive is not None:
-            c_drive = body.parent.parent
-            c_free_space_data = c_drive.find(
-                "div", text='Free Space:\xA0', class_="datakey").parent
-            return c_free_space_data.find(class_="datavalue").text
+        c_space_spec = body.find("div", class_="datavalue", text='C:')
+        if c_space_spec is not None:
+            c_space_spec_found = c_space_spec.parent.parent
+            c_space_data = c_space_spec_found.find("div", text='Free Space:\xA0', class_="datakey").parent
+            return c_space_data.find(class_="datavalue").text
 
-    if cspace():
-        data.append("\x02Space Left (C:\):\x02" + " " + cspace())
+    c_space_spec = cspace()
+    if c_space_spec is not None:
+        data.append("\x02Space Left (C:\):\x02" + " " + c_space_spec)
 
     ram_spec = body.find("div", text='RAM')
-    if ram_spec:
+    if ram_spec is not None:
         data.append(
             "\x02RAM:\x02" + " " + ram_spec.next_sibling.next_sibling.text)
 
-    ram_usg_spec = body.find(
-        "div", class_="blue clear",
-        text='Physical Memory').next_sibling.next_sibling.find(
-            "div", text='Memory Usage:\xA0',
-            class_="datakey").parent.find(class_="datavalue").text
-    if ram_usg_spec:
-        data.append("\x02RAM Usg:\x02" + " " + ram_usg_spec)
+    def ramusg():
+        ram_usg_spec = body.find("div", class_="blue clear", text='Physical ramory')
+        if ram_usg_spec is not None:
+            ram_usg_spec_found = ram_usg_spec.next_sibling.next_sibling
+            ram_usg_data = ram_usg_spec_found.find("div", text='Memory Usage:\xA0', class_="datakey").parent
+            return ram_usg_data.find(class_="datavalue").text
+
+    ram_usg_spec = ramusg()
+    if ram_usg_spec is not None:
+        data.append("\x02RAM USG:\x02" + " " + ram_usg_spec)
 
     cpu_spec = body.find("div", text='CPU')
-    if cpu_spec:
+    if cpu_spec is not None:
         data.append(
             "\x02CPU:\x02" + " " + cpu_spec.next_sibling.next_sibling.text)
 
-    gpu_find = body.find("div", text='Graphics').next_sibling.next_sibling.text
-    gpu_spec = ""
-    for gpu_string in GPU_RE.finditer(gpu_find):
-        gpu_spec += gpu_string.group()
-    if gpu_spec:
+    def gpuspec():
+        gpu_find = body.find("div", text='Graphics')
+        if gpu_find is not None:
+            gpu_find = gpu_find.next_sibling.next_sibling.text
+            gpu_spec = ""
+            for gpu_string in GPU_RE.finditer(gpu_find):
+                gpu_spec += gpu_string.group()
+                return gpu_spec
+
+    gpu_spec = gpuspec()
+    if gpu_spec is not None:
         data.append("\x02GPU:\x02" + " " + gpu_spec)
 
+    has_badware = False
+
     pico_spec = body.find("div", text=PICO_RE)
-    if pico_spec:
+    if pico_spec is not None:
+        has_badware = True
         data.append("\x02Badware:\x02" + " " + pico_spec.text)
 
     kms_spec = body.find("div", text=KMS_RE)
-    if kms_spec:
+    if kms_spec is not None:
+        has_badware = True
         data.append("\x02Badware:\x02" + " " + kms_spec.text)
 
     booster_spec = body.find("div", text=BOOSTER_RE)
-    if booster_spec:
+    if booster_spec is not None:
+        has_badware = True
         data.append("\x02Badware:\x02" + " " + booster_spec.text)
 
     reviver_spec = body.find("div", text=REVIVER_RE)
-    if reviver_spec:
+    if reviver_spec is not None:
+        has_badware = True
         data.append("\x02Badware:\x02" + " " + reviver_spec.text)
 
     killer_spec = body.find("div", text=KILLER_RE)
-    if killer_spec:
+    if killer_spec is not None:
+        has_badware = True
         data.append("\x02Badware:\x02" + " " + killer_spec.text)
 
-    if 'Badware' not in specout():
+    if not has_badware:
         data.append("\x02No Badware\x02")
 
     def smartcheck():
         drive__spec = body.find_all("div", class_="blue clear", text="05")
-        drive_spec_SMART_checked = body.find(
-            "div", class_="blue clear", text="05")
+        drive_spec_SMART_checked = body.find("div", class_="blue clear", text="05")
         if drive_spec_SMART_checked is not None:
             values = []
             for i, found in enumerate(drive__spec):
@@ -109,15 +120,15 @@ def get_speccy_url(match):
                 raw_value = SMART[rv_index + 1]
                 if raw_value != "0000000000":
                     values.append(str(i + 1))
-            return values
+                    return values
 
     drives = smartcheck()
-    if drives:
+    if drives is not None:
         for item in drives:
             data.append("\x02Bad Disk:\x02 #{}".format(item))
     else:
         data.append("\x02Disks Healthy\x02")
 
-    specout = re.sub(r"\s+", " ", ' ● '.join(data))
+    spec_out = re.sub(r"\s+", " ", ' ● '.join(data))
 
-    return specout
+    return spec_out
