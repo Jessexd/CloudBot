@@ -88,7 +88,8 @@ def get_speccy_url(match):
 
     def smartcheck():
         drive_spec = body.find_all("div", class_="blue clear", text="05")
-        if drive_spec is not None:
+        drive_spec_SMART_checked = body.find("div", class_="blue clear", text="05")
+        if drive_spec_SMART_checked is not None:
             values = []
             for i, found in enumerate(drive_spec):
                 drives = found.next_sibling.next_sibling.stripped_strings
