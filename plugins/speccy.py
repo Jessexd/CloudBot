@@ -89,15 +89,14 @@ def get_speccy_url(match):
     def smartcheck():
         drive_spec = body.find_all("div", class_="blue clear", text="05")
         if drive_spec is not None:
-            values = []
             for i, found in enumerate(drive_spec):
                 drives = found.next_sibling.next_sibling.stripped_strings
                 SMART = list(drives)
                 rv_index = SMART.index("Raw Value:")
                 raw_value = SMART[rv_index + 1]
                 if raw_value != "0000000000":
-                    values.append(str(i + 1))
-                    return values
+                    raw_value = (str(i + 1))
+                    return raw_value
 
     drives = smartcheck()
     if drives is not None:
