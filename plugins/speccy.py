@@ -50,7 +50,7 @@ def get_speccy_url(match):
             "\x02RAM:\x02" + " " + ram_spec.next_sibling.next_sibling.text)
 
     def ramusg():
-        ram_usg_spec = body.find("div", class_="blue clear", text='Physical ramory')
+        ram_usg_spec = body.find("div", class_="blue clear", text='Physical Memory')
         if ram_usg_spec is not None:
             ram_usg_spec_found = ram_usg_spec.next_sibling.next_sibling
             ram_usg_data = ram_usg_spec_found.find("div", text='Memory Usage:\xA0', class_="datakey").parent
